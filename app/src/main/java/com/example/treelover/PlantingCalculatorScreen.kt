@@ -1,16 +1,18 @@
 package com.example.treelover
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlantingCalculatorScreen() {
-    var landArea by remember { mutableStateOf(TextFieldValue("")) }
+    var landArea by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     val treeTypes = listOf("Type A", "Type B", "Type C")
     var selectedTreeType by remember { mutableStateOf(treeTypes[0]) }
@@ -27,8 +29,13 @@ fun PlantingCalculatorScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = landArea,
-            onValueChange = { landArea = it },
+            onValueChange = {
+                // Filter out non-digit characters
+                val filteredValue = it.filter { char -> char.isDigit() }
+                landArea = filteredValue
+            },
             label = { Text("Luas Lahan (m²)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
