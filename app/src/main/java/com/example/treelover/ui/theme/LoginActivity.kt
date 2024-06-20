@@ -12,7 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -63,13 +65,15 @@ fun LoginScreen(onLogin: (String, String) -> Unit) {
             Text(
                 text = "Selamat Datang",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
 
             Text(
                 text = "Di TreeLover",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -77,7 +81,8 @@ fun LoginScreen(onLogin: (String, String) -> Unit) {
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
-                label = { Text("Username") },
+                label = { Text("Username", fontWeight = FontWeight.Bold, color = Color.Black) },
+                textStyle = TextStyle(color = Color.Black, fontWeight = FontWeight.Bold),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp)
             )
@@ -85,7 +90,8 @@ fun LoginScreen(onLogin: (String, String) -> Unit) {
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
+                label = { Text("Password", fontWeight = FontWeight.Bold, color = Color.Black) },
+                textStyle = TextStyle(color = Color.Black, fontWeight = FontWeight.Bold),
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp)
@@ -95,7 +101,11 @@ fun LoginScreen(onLogin: (String, String) -> Unit) {
                 onClick = { onLogin(username, password) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Login")
+                Text(
+                    "Login",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                    )
             }
         }
     }

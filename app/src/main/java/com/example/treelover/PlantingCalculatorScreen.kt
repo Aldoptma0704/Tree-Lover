@@ -6,8 +6,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import kotlin.math.floor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -15,7 +15,9 @@ fun PlantingCalculatorScreen() {
     var landArea by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     val treeTypes = listOf("Type A", "Type B", "Type C")
+    val treeSizes = mapOf("Type A" to 1, "Type B" to 2, "Type C" to 3)
     var selectedTreeType by remember { mutableStateOf(treeTypes[0]) }
+    var treeCount by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -75,10 +77,20 @@ fun PlantingCalculatorScreen() {
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { /* Handle calculation */ }) {
+        Button(onClick = {
+            val area = landArea.toIntOrNull() ?: 0
+            val treeSize = treeSizes[selectedTreeType] ?: 3
+            val spacing = 2 // 2 meters spacing between trees
+            val treeArea = treeSize + spacing
+            treeCount = calculateTreeCount(area, treeArea)
+        }) {
             Text("Hitung")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Jumlah Pohon yang Diperlukan: (Output hasil perhitungan)")
+        Text(text = "Jumlah pohon yang bisa ditanam: $treeCount")
     }
+}
+
+fun calculateTreeCount(landArea: Int, treeArea: Int): Int {
+    return floor((landArea / treeArea.toDouble())).toInt()
 }

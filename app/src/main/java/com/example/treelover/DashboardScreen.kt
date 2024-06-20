@@ -1,7 +1,6 @@
 package com.example.treelover
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,12 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.input.TextFieldValue
+import com.example.treelover.ui.theme.TreeLoverTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,8 +56,8 @@ fun TreeProfileCard(tree: Tree, onTreeUpdate: (Tree) -> Unit) {
     var name by remember { mutableStateOf(TextFieldValue(tree.name)) }
     var location by remember { mutableStateOf(TextFieldValue(tree.location)) }
     var plantDate by remember { mutableStateOf(TextFieldValue(tree.plantDate)) }
-    var currentCondition by remember { mutableStateOf(TextFieldValue(tree.currentCondition)) }
-    var information by remember { mutableStateOf(TextFieldValue(tree.information)) }
+    var sunlight by remember { mutableStateOf(TextFieldValue("")) }
+    var water by remember { mutableStateOf(TextFieldValue("")) }
 
     Card(
         modifier = Modifier
@@ -102,29 +100,52 @@ fun TreeProfileCard(tree: Tree, onTreeUpdate: (Tree) -> Unit) {
                             label = { Text("Tanggal Tanam") }
                         )
                         OutlinedTextField(
-                            value = currentCondition,
+                            value = sunlight,
                             onValueChange = {
-                                currentCondition = it
-                                onTreeUpdate(tree.copy(currentCondition = it.text))
+                                sunlight = it
                             },
-                            label = { Text("Kondisi Saat Ini") }
+                            label = { Text("pupuk/gr") }
                         )
+                        OutlinedTextField(
+                            value = water,
+                            onValueChange = {
+                                water = it
+                            },
+                            label = { Text("Kebutuhan Air/L") }
+                        )
+                        Button(onClick = {
+                            val condition = determineTreeCondition(sunlight.text, water.text)
+                            onTreeUpdate(tree.copy(currentCondition = condition))
+                        }) {
+                            Text("Update Kondisi")
+                        }
                     } else {
-                        Text(text = name.text, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text(text = name.text, fontSize = 20.sp)
                         Text(text = "Lokasi: ${location.text}", fontSize = 16.sp)
                         Text(text = "Tanggal Tanam: ${plantDate.text}", fontSize = 16.sp)
                     }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            if (!expanded) {
-                Text(text = "Kondisi Saat Ini: ${currentCondition.text}")
-            }
+            Text(text = "Kondisi Saat Ini: ${tree.currentCondition}")
             if (expanded) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Informasi tambahan: ${information.text} .")
+                Text(text = "Informasi tambahan: ${tree.information}")
             }
         }
+    }
+}
+
+// Function to determine the condition of the tree
+fun determineTreeCondition(pupuk: String, water: String): String {
+    // Example decision-making logic
+    val pupukInt = pupuk.toIntOrNull() ?: 0
+    val waterInt = water.toIntOrNull() ?: 0
+
+    return when {
+        pupukInt < 200  && waterInt > 2 -> "Sehat"
+        pupukInt < 50 || waterInt < 1 -> "Perlu Perhatian"
+        else -> "Tingkatkan Air dan Pupuk"
     }
 }
 
@@ -156,7 +177,7 @@ val sampleTrees = listOf(
         location = "Lokasi B",
         plantDate = "02-02-2021",
         currentCondition = "Perlu Perhatian",
-        information ="",
+        information = "",
         imageRes = R.drawable.pohon_type_a
     )
 )
