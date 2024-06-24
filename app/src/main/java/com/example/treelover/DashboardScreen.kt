@@ -20,6 +20,7 @@ import com.example.treelover.ui.theme.TreeLoverTheme
 fun DashboardScreen() {
     // Define a mutable state list of trees
     val trees = remember { mutableStateListOf(*sampleTrees.toTypedArray()) }
+    var showAddTreeDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -37,7 +38,9 @@ fun DashboardScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         // List of Trees
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier.weight(1f)
+        ) {
             items(trees) { tree ->
                 TreeProfileCard(tree) { updatedTree ->
                     val index = trees.indexOfFirst { it.id == tree.id }
@@ -47,14 +50,28 @@ fun DashboardScreen() {
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { showAddTreeDialog = true }) {
+            Text("Tambah Pohon")
+        }
+
+        if (showAddTreeDialog) {
+            AddTreeDialog(
+                onAddTree = { newTree ->
+                    trees.add(newTree)
+                    showAddTreeDialog = false
+                },
+                onDismiss = { showAddTreeDialog = false }
+            )
+        }
     }
 }
 
 @Composable
 fun TreeProfileCard(tree: Tree, onTreeUpdate: (Tree) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf(TextFieldValue(tree.name)) }
-    var location by remember { mutableStateOf(TextFieldValue(tree.location)) }
     var plantDate by remember { mutableStateOf(TextFieldValue(tree.plantDate)) }
     var sunlight by remember { mutableStateOf(TextFieldValue("")) }
     var water by remember { mutableStateOf(TextFieldValue("")) }
@@ -74,23 +91,9 @@ fun TreeProfileCard(tree: Tree, onTreeUpdate: (Tree) -> Unit) {
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
+                    Text(text = tree.name, fontSize = 20.sp)
+                    Text(text = "Lokasi: ${tree.location}", fontSize = 16.sp)
                     if (expanded) {
-                        OutlinedTextField(
-                            value = name,
-                            onValueChange = {
-                                name = it
-                                onTreeUpdate(tree.copy(name = it.text))
-                            },
-                            label = { Text("Nama") }
-                        )
-                        OutlinedTextField(
-                            value = location,
-                            onValueChange = {
-                                location = it
-                                onTreeUpdate(tree.copy(location = it.text))
-                            },
-                            label = { Text("Lokasi") }
-                        )
                         OutlinedTextField(
                             value = plantDate,
                             onValueChange = {
@@ -104,7 +107,7 @@ fun TreeProfileCard(tree: Tree, onTreeUpdate: (Tree) -> Unit) {
                             onValueChange = {
                                 sunlight = it
                             },
-                            label = { Text("pupuk/gr") }
+                            label = { Text("Pupuk/gr") }
                         )
                         OutlinedTextField(
                             value = water,
@@ -119,10 +122,6 @@ fun TreeProfileCard(tree: Tree, onTreeUpdate: (Tree) -> Unit) {
                         }) {
                             Text("Update Kondisi")
                         }
-                    } else {
-                        Text(text = name.text, fontSize = 20.sp)
-                        Text(text = "Lokasi: ${location.text}", fontSize = 16.sp)
-                        Text(text = "Tanggal Tanam: ${plantDate.text}", fontSize = 16.sp)
                     }
                 }
             }
@@ -136,6 +135,72 @@ fun TreeProfileCard(tree: Tree, onTreeUpdate: (Tree) -> Unit) {
     }
 }
 
+@Composable
+fun AddTreeDialog(onAddTree: (Tree) -> Unit, onDismiss: () -> Unit) {
+    var name by remember { mutableStateOf(TextFieldValue("")) }
+    var location by remember { mutableStateOf(TextFieldValue("")) }
+    var plantDate by remember { mutableStateOf(TextFieldValue("")) }
+    var fertilizer by remember { mutableStateOf(TextFieldValue("")) }
+    var water by remember { mutableStateOf(TextFieldValue("")) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Button(onClick = {
+                val newTree = Tree(
+                    id = (Math.random() * 1000).toInt(), // Generate a random ID for simplicity
+                    name = name.text,
+                    location = location.text,
+                    plantDate = plantDate.text,
+                    currentCondition = "Belum Diketahui",
+                    information = "Informasi baru",
+                    imageRes = R.drawable.pohon_type_a
+                )
+                onAddTree(newTree)
+            }) {
+                Text("Tambah")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Batal")
+            }
+        },
+        title = {
+            Text(text = "Tambah Pohon")
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nama Pohon") }
+                )
+                OutlinedTextField(
+                    value = location,
+                    onValueChange = { location = it },
+                    label = { Text("Lokasi") }
+                )
+                OutlinedTextField(
+                    value = plantDate,
+                    onValueChange = { plantDate = it },
+                    label = { Text("Tanggal Tanam") }
+                )
+                OutlinedTextField(
+                    value = fertilizer,
+                    onValueChange = { fertilizer = it },
+                    label = { Text("Pupuk/gr") }
+                )
+                OutlinedTextField(
+                    value = water,
+                    onValueChange = { water = it },
+                    label = { Text("Kebutuhan Air/L") }
+                )
+            }
+        }
+    )
+}
+
 // Function to determine the condition of the tree
 fun determineTreeCondition(pupuk: String, water: String): String {
     // Example decision-making logic
@@ -143,7 +208,7 @@ fun determineTreeCondition(pupuk: String, water: String): String {
     val waterInt = water.toIntOrNull() ?: 0
 
     return when {
-        pupukInt < 200  && waterInt > 2 -> "Sehat"
+        pupukInt < 200 && waterInt > 2 -> "Sehat"
         pupukInt < 50 || waterInt < 1 -> "Perlu Perhatian"
         else -> "Tingkatkan Air dan Pupuk"
     }
@@ -164,20 +229,20 @@ data class Tree(
 val sampleTrees = listOf(
     Tree(
         id = 1,
-        name = "Pohon A",
-        location = "Lokasi A",
+        name = "Pohon Mangga",
+        location = "Kebun Buah",
         plantDate = "01-01-2020",
         currentCondition = "Sehat",
-        information = "",
+        information = "Pohon Mangga Madu",
         imageRes = R.drawable.pohon_type_a
     ),
     Tree(
         id = 2,
-        name = "Pohon B",
-        location = "Lokasi B",
+        name = "Pohon Kelapa",
+        location = "Pantai",
         plantDate = "02-02-2021",
         currentCondition = "Perlu Perhatian",
-        information = "",
+        information = "Pohon Kelapa Hibrida",
         imageRes = R.drawable.pohon_type_a
     )
 )
