@@ -60,7 +60,12 @@ fun DashboardScreen() {
         if (showAddTreeDialog) {
             AddTreeDialog(
                 onAddTree = { newTree ->
-                    trees.add(newTree)
+                    val kelapaIndex = trees.indexOfFirst { it.name == "Pohon Kelapa" }
+                    if (kelapaIndex != -1) {
+                        trees.add(kelapaIndex + 1, newTree)
+                    } else {
+                        trees.add(newTree)
+                    }
                     showAddTreeDialog = false
                 },
                 onDismiss = { showAddTreeDialog = false }
@@ -148,7 +153,7 @@ fun AddTreeDialog(onAddTree: (Tree) -> Unit, onDismiss: () -> Unit) {
         confirmButton = {
             Button(onClick = {
                 val newTree = Tree(
-                    id = (Math.random() * 1000).toInt(), // Generate a random ID for simplicity
+                    id = (Math.random() * 1000).toInt(),
                     name = name.text,
                     location = location.text,
                     plantDate = plantDate.text,
@@ -157,6 +162,7 @@ fun AddTreeDialog(onAddTree: (Tree) -> Unit, onDismiss: () -> Unit) {
                     imageRes = R.drawable.pohon_type_a
                 )
                 onAddTree(newTree)
+                onDismiss()
             }) {
                 Text("Tambah")
             }
@@ -176,11 +182,17 @@ fun AddTreeDialog(onAddTree: (Tree) -> Unit, onDismiss: () -> Unit) {
                     onValueChange = { name = it },
                     label = { Text("Nama Pohon") }
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 OutlinedTextField(
                     value = location,
                     onValueChange = { location = it },
                     label = { Text("Lokasi") }
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 OutlinedTextField(
                     value = plantDate,
                     onValueChange = { plantDate = it },
@@ -201,6 +213,7 @@ fun AddTreeDialog(onAddTree: (Tree) -> Unit, onDismiss: () -> Unit) {
     )
 }
 
+
 // Function to determine the condition of the tree
 fun determineTreeCondition(pupuk: String, water: String): String {
     // Example decision-making logic
@@ -208,6 +221,9 @@ fun determineTreeCondition(pupuk: String, water: String): String {
     val waterInt = water.toIntOrNull() ?: 0
 
     return when {
+        pupukInt > 200 && waterInt > 50 -> "Jangan terlalu kebanyakan menggunakan pupuk dan air"
+        pupukInt < 200 && waterInt > 50 -> "Pupuk Sudah bagus namun jangan terlalu kebanyakan menggunakan air"
+        pupukInt > 200 && waterInt < 50 -> "Kebutuhan Air sudah tepat namun jangan terlalu kebanyakan menggunakan pupuk"
         pupukInt < 200 && waterInt > 2 -> "Sehat"
         pupukInt < 50 || waterInt < 1 -> "Perlu Perhatian"
         else -> "Tingkatkan Air dan Pupuk"
